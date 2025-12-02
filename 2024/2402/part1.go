@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+const (
+	FAIL = "\033[31m✗\033[0m"
+	OK   = "\033[32m✓\033[0m"
+)
+
 func convert(lines []string) [][]int {
 	output := [][]int{}
 
@@ -26,8 +31,9 @@ func convert(lines []string) [][]int {
 	return output
 }
 
-func walk(line []int) bool {
-	fmt.Printf("Line: %d\n", line)
+func safe(line []int) bool {
+	fmt.Printf("%d ", line)
+
 	first := line[0]
 	second := line[1]
 	diff := second - first
@@ -40,22 +46,22 @@ func walk(line []int) bool {
 		first := line[i]
 		second := line[i+1]
 		diff = second - first
-		fmt.Printf("  > Evaluating %d and %d...\n", first, second)
+
 		if i+1 > len(line) {
 			break
 		}
 		if diff > 3 || diff < -3 || diff == 0 {
-			fmt.Printf("        Bad diff: %d\n", diff)
+			fmt.Printf("%s bad diff\n", FAIL)
 			return false
 		}
 		if positive {
 			if first > second {
-				fmt.Println("        Failed positive trend")
+				fmt.Printf("%s positive trend\n", FAIL)
 				return false
 			}
 		} else {
 			if first < second {
-				fmt.Println("        Failed negative trend")
+				fmt.Printf("%s negative trend\n", FAIL)
 				return false
 			}
 		}
@@ -63,13 +69,33 @@ func walk(line []int) bool {
 	return true
 }
 
+func safeWithRemoval(line []int) bool {
+	for i := range len(line) {
+		newLine := []int{}
+		for j := range len(line) {
+			if j != i {
+				newLine = append(newLine, line[j])
+			}
+		}
+		fmt.Printf("    remove (i=%d) %d ", i, line[i])
+		if safe(newLine) {
+			return true
+		}
+		continue
+	}
+	return false
+}
+
 func process(dataLines [][]int) int {
 	safeCount := 0
-	for _, line := range dataLines {
-		safe := walk(line)
-		if safe {
+	for i, line := range dataLines {
+		fmt.Printf("> New eval: line %d ", i+1)
+		if safe(line) {
 			safeCount++
-			fmt.Printf("        OK - Count: %d\n", safeCount)
+			fmt.Printf("%s count:   %d\n", OK, safeCount)
+		} else if safeWithRemoval(line) {
+			safeCount++
+			fmt.Printf("%s removal: %d\n", OK, safeCount)
 		}
 	}
 	return safeCount
@@ -97,5 +123,5 @@ func main() {
 	dataLines := convert(dataStrings)
 	count := process(dataLines)
 
-	fmt.Printf("Safe count: %d\n", count)
+	fmt.Printf("\nFinal count: %d\n", count)
 }
