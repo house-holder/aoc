@@ -11,22 +11,22 @@ import (
 
 func hasPattern(id int) bool {
 	idStr := strconv.Itoa(id)
-	length := len(idStr)
-	half := length / 2
 
-	for i := range half {
-		if idStr[i] != idStr[half+i] {
-			return false
+	for i := 1; i <= len(idStr)/2; i++ {
+		if len(idStr)%i == 0 {
+			pattern := idStr[0:i]
+			if strings.Repeat(pattern, len(idStr)/i) == idStr {
+				fmt.Printf("   > Found: %s\n", idStr)
+				return true
+			}
 		}
 	}
-
-	return length == half*2
+	return false
 }
 
 func evaluateRange(firstID int, lastID int, accumulator *int) {
 	for i := firstID; i <= lastID; i++ {
 		if hasPattern(i) {
-			fmt.Printf("   > Found ID %v has pattern\n", i)
 			*accumulator += i
 		}
 	}
@@ -52,20 +52,20 @@ func main() {
 	accumulator := 0
 
 	for ID := range strings.SplitSeq(string(body), ",") {
-		possRange := strings.Split(ID, "-")
-		fmt.Printf("Evaluating range: %v\n", possRange)
+		thisRange := strings.Split(ID, "-")
+		fmt.Printf("Evaluating range: %v\n", thisRange)
 
-		firstID, err := strconv.Atoi(possRange[0])
+		firstID, err := strconv.Atoi(thisRange[0])
 		if err != nil {
 			log.Fatalf("Failed to convert: %v", err)
 		}
 
-		lastID, err := strconv.Atoi(possRange[1])
+		lastID, err := strconv.Atoi(thisRange[1])
 		if err != nil {
 			log.Fatalf("Failed to convert: %v", err)
 		}
 
 		evaluateRange(firstID, lastID, &accumulator)
-		fmt.Printf("Accumulator: %v\n", accumulator)
+		fmt.Printf("  Acc: %v\n", accumulator)
 	}
 }
