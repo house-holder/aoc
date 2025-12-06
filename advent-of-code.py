@@ -50,6 +50,10 @@ def openStats() -> dict[str, str]:
         stats = {}
     return stats
 
+def writeStats(stats: dict) -> None:
+    with open(STATS, "w") as file:
+        json.dump(stats, file, indent=4)
+
 def ensureNestedStructure(
     stats: dict,
     year: str,
@@ -68,18 +72,42 @@ def promptUser(prompt: str) -> bool:
     response = input(f"{prompt} (Y/n): ").strip().lower()
     return response in ['y', 'yes', '']
 
-def createStatsEntry(part: str, cmd: str = "start") -> None:
+def getPartTime(timestamps: list[int], part: str) -> None:
+    partTime = 0
+    for i in range(0, len(timestamps), 2):
+        partTime += timestamps[i + 1] - timestamps[i]
+    return partTime
+
+def createStatsEntry(part: str, cmd: str = "stamp") -> None:
     stats = openStats()
     year, day = getYearAndDay() 
-    partDict = ensureNestedStructure(stats, year, day, part)
+
+    if year not in stats:
+        stats[year] = {}
+    if f"day_{day}" not in stats[year]:
+        stats[year][f"day_{day}"] = {}
+    dayDict = stats[year][f"day_{day}"]
+
+    if "timestamps" not in dayDict:
+        dayDict["timestamps"] = {}
+    if f"part_{part}" not in dayDict["timestamps"]:
+        dayDict["timestamps"][f"part_{part}"] = []
     
-    if "timestamps" not in partDict:
-        partDict["timestamps"] = []
-    
-    timestamps = partDict["timestamps"]
-    isRunning = len(timestamps) % 2 == 0 and len(timestamps) > 0
-     
+    timestamps = dayDict["timestamps"][f"part_{part}"] 
     timestamps.append(int(makeTimestamp())) 
+    
+    if len(timestamps) % 2 == 0:
+        if "part_1_time" not in dayDict:
+            dayDict[f"part_1_time"] = 0
+        if "part_2_time" not in dayDict:
+            dayDict[f"part_2_time"] = 0
+        writeStats(stats)
+        partTime = getPartTime(timestamps, part)
+        dayDict[f"part_{part}_time"] = partTime
+        totalTime = dayDict[f"part_1_time"] + dayDict[f"part_2_time"]
+        dayDict[f"total_time"] = totalTime
+        writeStats(stats)
+
     with open(STATS, "w") as file:
         json.dump(stats, file, indent=4)
 
@@ -100,14 +128,9 @@ def main() -> None:
         case _ if "z" in args:
             return
         
-        case _ if "start" in args:
-            idx = args.index("start")
-            createStatsEntry(args[idx + 1], "start")
-            return
-
-        case _ if "stop" in args:
-            idx = args.index("stop")
-            createStatsEntry(args[idx + 1], "stop")
+        case _ if "stamp" in args:
+            idx = args.index("stamp")
+            createStatsEntry(args[idx + 1])
             return
 
         case _:
