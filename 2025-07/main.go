@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func rebuildWithBeams(lines []string) []string {
+func rebuild(lines []string) []string {
 	output := []string{}
 
 	for lineIdx, line := range lines {
@@ -19,7 +19,6 @@ func rebuildWithBeams(lines []string) []string {
 			output = append(output, line)
 			continue
 		}
-
 		newLine := ""
 		prevLine := string(output[len(output)-1])
 
@@ -49,14 +48,13 @@ func rebuildWithBeams(lines []string) []string {
 		}
 		output = append(output, newLine)
 	}
-
 	return output
 }
 
-func evalPart1(lines []string) int {
+func evalPart1(rawLines []string) int {
 	prev := ""
 	splitCount := 0
-	lines = rebuildWithBeams(lines)
+	lines := rebuild(rawLines)
 
 	for i, line := range lines {
 		if i == 0 || line == "" || !strings.Contains(line, "^") {
@@ -73,9 +71,35 @@ func evalPart1(lines []string) int {
 	return splitCount
 }
 
-func evalPart2(lines []string) int {
+func evalPart2(rawLines []string) int {
 	timelines := 0
+	lines := rebuild(rawLines)
 
+	width := len(lines[0])
+	paths := make([]int, width)
+	paths[strings.Index(lines[0], "S")] = 1
+	prevPaths := paths
+
+	for _, line := range lines[1:] {
+		paths = make([]int, width)
+		for charIdx, char := range line {
+			pathsToPPOS := 0
+			if char == '|' {
+				pathsToPPOS += prevPaths[charIdx]
+				if charIdx < width-1 && line[charIdx+1] == '^' {
+					pathsToPPOS += prevPaths[charIdx+1]
+				}
+				if charIdx > 0 && line[charIdx-1] == '^' {
+					pathsToPPOS += prevPaths[charIdx-1]
+				}
+			}
+			paths[charIdx] = pathsToPPOS
+		}
+		prevPaths = paths
+	}
+	for _, val := range paths {
+		timelines += val
+	}
 	return timelines
 }
 
@@ -89,7 +113,6 @@ func main() {
 
 	part1Result := evalPart1(lines)
 	part2Result := evalPart2(lines)
-
-	fmt.Printf("Part 1: %v\n", part1Result)
-	fmt.Printf("Part 2: %v\n", part2Result)
+	fmt.Printf("\nPart 1: %v", part1Result)
+	fmt.Printf("\tPart 2: %v\n", part2Result)
 }
