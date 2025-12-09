@@ -160,13 +160,13 @@ func getCircuitSizes(input []*Circuit) []int {
 
 func connect(input [2]*Box) {
 	if slices.Contains(input[0].circuit.connections, input[1]) {
-		fmt.Printf("%sSKIP CASE: %s.connections contains %s%s\n",
-			RED, input[0].name, input[1].name, NC)
+		// fmt.Printf("%sSKIP CASE: %s.connections contains %s%s\n",
+		// 	RED, input[0].name, input[1].name, NC)
 		return
 	}
 	if slices.Contains(input[1].circuit.connections, input[0]) {
-		fmt.Printf("%sSKIP CASE: %s.connections contains %s%s\n",
-			RED, input[1].name, input[0].name, NC)
+		// fmt.Printf("%sSKIP CASE: %s.connections contains %s%s\n",
+		// 	RED, input[1].name, input[0].name, NC)
 		return
 	}
 	cA := input[0].circuit
@@ -178,13 +178,12 @@ func connect(input [2]*Box) {
 	}
 
 	for _, box := range cB.connections {
-		fmt.Printf("  Target: %s", box.name)
-
+		// fmt.Printf("  Target: %s", box.name)
 		if !slices.Contains(cA.connections, box) {
-			fmt.Printf(", added to %s\n", cA.name)
+			// fmt.Printf(", added to %s\n", cA.name)
 			cA.connections = append(cA.connections, box)
 			box.circuit = cA
-			fmt.Printf("    %s\n", box.fullName())
+			// fmt.Printf("    %s\n", box.fullName())
 			continue
 		}
 		fmt.Printf("%sOH NO OH MY GOD HELP ME OH THE HORROR%s\n", RED, NC)
@@ -217,20 +216,64 @@ func evalPart1(input string, filename string) int {
 
 	for i := range connectLimit {
 		pair := allPossibleConnections[keys[i]]
-		debugPrintBoxPair("Eval:  ", pair)
+		// debugPrintBoxPair("Eval:  ", pair)
 		connect(pair)
-		debugPrintBoxPair("After: ", pair)
-		fmt.Println()
+		// debugPrintBoxPair("After: ", pair)
 	}
 	sizes := getCircuitSizes(allCircuits)
-	debugPrintCircuits(allCircuits)
-
+	// debugPrintCircuits(allCircuits)
 	slices.Sort(sizes)
-	fmt.Printf("\nSorted sizes: %s%v%s\n", GRN, sizes, NC)
+	// fmt.Printf("\nSorted sizes: %s%v%s\n", GRN, sizes, NC)
+
 	for i := range 3 {
 		result *= sizes[(len(sizes)-1)-i]
 	}
 	return result
+}
+
+func getNonzeroCircuits(input []*Circuit) int {
+	acc := 0
+	for _, c := range input {
+		if len(c.connections) > 0 {
+			acc++
+		}
+	}
+	return acc
+}
+
+func evalPart2(input string) int {
+	prevX, currX := 0, 0
+	// connectLimit := 10
+	// if filename == "input.txt" {
+	// 	connectLimit = 1000
+	// }
+
+	allBoxes := []*Box{}
+	allCircuits := []*Circuit{}
+	for line := range strings.SplitSeq(input, "\n") {
+		newBox := buildBox(line, allBoxes)
+		allBoxes = append(allBoxes, newBox)
+		allCircuits = append(allCircuits, newBox.circuit)
+	}
+
+	allPossibleConnections := mapAllConnections(allBoxes)
+
+	keys := []int{}
+	for k := range allPossibleConnections {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+
+	i := 0
+	for getNonzeroCircuits(allCircuits) > 1 {
+		pair := allPossibleConnections[keys[i]]
+		prevX = pair[0].pos.X
+		currX = pair[1].pos.X
+		connect(pair)
+		i++
+	}
+
+	return prevX * currX
 }
 
 func main() {
@@ -242,5 +285,8 @@ func main() {
 	body := string(bytes)
 
 	result1 := evalPart1(body, filename)
+	result2 := evalPart2(body)
+
 	fmt.Printf("Part 1: %d\n", result1)
+	fmt.Printf("Part 2: %d\n", result2)
 }
