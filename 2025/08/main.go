@@ -183,13 +183,13 @@ func connect(input [2]*Box) {
 		if !slices.Contains(cA.connections, box) {
 			fmt.Printf(", added to %s\n", cA.name)
 			cA.connections = append(cA.connections, box)
+			box.circuit = cA
+			fmt.Printf("    %s\n", box.fullName())
 			continue
 		}
 		fmt.Printf("%sOH NO OH MY GOD HELP ME OH THE HORROR%s\n", RED, NC)
 	}
-
 	cB.connections = []*Box{}
-	input[1].circuit = cA
 }
 
 func evalPart1(input string, filename string) int {
@@ -217,8 +217,10 @@ func evalPart1(input string, filename string) int {
 
 	for i := range connectLimit {
 		pair := allPossibleConnections[keys[i]]
-		debugPrintBoxPair("Eval: ", pair)
+		debugPrintBoxPair("Eval:  ", pair)
 		connect(pair)
+		debugPrintBoxPair("After: ", pair)
+		fmt.Println()
 	}
 	sizes := getCircuitSizes(allCircuits)
 	debugPrintCircuits(allCircuits)
