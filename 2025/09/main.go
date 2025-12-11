@@ -78,42 +78,64 @@ func evalPart1(input []Coordinate) int {
 	return maxPossibleArea(input)
 }
 
-func (c *Coordinate) isRed(input []Coordinate) bool {
+func (c *Coordinate) isWithin(input []Coordinate) bool {
 	return slices.Contains(input, *c)
 }
 
-func (c *Coordinate) isGreen(input []Coordinate) bool {
-	return false
-}
-
-func printMap(input []Coordinate, hiX int) {
-	reds := []Coordinate{}
-	greens := []Coordinate{}
-	for y := range len(input) + 1 {
+func printMap(
+	reds []Coordinate,
+	greens []Coordinate,
+	hiX int,
+) {
+	for y := range len(reds) + 1 {
 		fmt.Printf("\n")
 		for x := range hiX + 3 {
 			coord := Coordinate{x, y}
-			if coord.isRed(input) {
+			if coord.isWithin(reds) {
 				fmt.Printf("%s#%s", RED, NC)
-				reds = append(reds, coord)
-			} else if coord.isGreen(input) {
-				fmt.Printf("%s#%s", RED, NC)
-				greens = append(greens, coord)
+			} else if coord.isWithin(greens) {
+				fmt.Printf("%sX%s", GRN, NC)
 			} else {
 				fmt.Printf(".")
 			}
 		}
 	}
 	fmt.Printf("\n")
-	fmt.Println(greens)
+	// fmt.Println(greens)
+}
+
+func buildGreens(reds []Coordinate) []Coordinate {
+	greens := []Coordinate{}
+	prev := Coordinate{}
+
+	for i, curr := range reds {
+		if i > 0 {
+			prev = reds[i-1]
+			if curr.Y == prev.Y { // if same line
+				fmt.Printf("%d. curr=%d, currY=%d\n", i, curr.X, curr.Y)
+				fmt.Printf("   prevX=%d, prevY=%d\n", prev.X, prev.Y)
+				bigX := int(math.Max(float64(curr.X), float64(prev.X)))
+				litX := int(math.Min(float64(curr.X), float64(prev.X)))
+
+				for i := litX + 1; i < bigX; i++ {
+					greens = append(greens, Coordinate{i, curr.Y})
+					fmt.Printf("     append %d, %d\n", i, curr.Y)
+				}
+					} else {
+			continue
+		}
+	}
+	return greens
 }
 
 func evalPart2(input []Coordinate, hiX int) int {
-	printMap(input, hiX)
+	greens := buildGreens(input)
+	printMap(input, greens, hiX)
 
 	return len(input)
 }
 
+// start 1765470289 stop 1765472304
 func main() {
 	bytes, err := os.ReadFile(os.Args[1])
 	if err != nil {
