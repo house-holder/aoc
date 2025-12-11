@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -43,26 +44,32 @@ func findGreatestArea(input []Coordinate) int {
 		}
 	}
 	return maxArea
-
 }
 
 func findArea(cornerA Coordinate, cornerB Coordinate) int {
-	area := 0
-
-	return area
+	latSize := 1 + cornerB.X - cornerA.X
+	vertSize := 1 + cornerB.Y - cornerA.Y
+	return int(math.Abs(float64(latSize * vertSize)))
 }
 
-func evalPart1(input string) int {
-	allCoords := []Coordinate{}
+func convertCoords(input string) []Coordinate {
+	output := []Coordinate{}
 	for line := range strings.SplitSeq(input, "\n") {
 		if len(line) > 0 {
 			newCoords := getCoords(line)
-			allCoords = append(allCoords, newCoords)
+			output = append(output, newCoords)
 		}
 	}
-	fmt.Println(allCoords)
+	return output
+}
 
-	return findGreatestArea(allCoords)
+func evalPart1(input []Coordinate) int {
+	return findGreatestArea(input)
+}
+
+func evalPart2(input []Coordinate) int {
+
+	return len(input)
 }
 
 func main() {
@@ -71,10 +78,11 @@ func main() {
 		log.Fatalf("os.ReadFile failed. %v", err)
 	}
 	body := string(bytes)
+	coords := convertCoords(body)
 
 	fmt.Println()
-	result1 := evalPart1(body)
-	// result2 := evalPart2(body)
+	result1 := evalPart1(coords)
+	result2 := evalPart2(coords)
 	fmt.Printf("Result 1: %d\n", result1)
-	// fmt.Printf("Result 2: %d\n", result2)
+	fmt.Printf("Result 2: %d\n", result2)
 }
