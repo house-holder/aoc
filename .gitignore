@@ -1,1 +1,10 @@
 *.txt
+
+*.tmp
+*.swp
+*.swo
+target/
+/target/
+**/target/
+*.log
+**/*.rs.bk
