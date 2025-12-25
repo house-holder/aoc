@@ -6,29 +6,60 @@ import (
 	"math"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 )
 
-func lineToDims(line string) [3]int {
+type Box struct {
+	dims    []int
+	sfcArea int
+	vol     int
+}
+
+func NewBox(line string) Box {
 	strs := strings.Split(line, "x")
-	fmt.Println(strs)
-	return [3]int{1, 2, 3}
+	length, err := strconv.Atoi(strs[0])
+	if err != nil {
+		log.Fatal("strconv failed:", err)
+	}
+	width, err := strconv.Atoi(strs[1])
+	if err != nil {
+		log.Fatal("strconv failed:", err)
+	}
+	height, err := strconv.Atoi(strs[2])
+	if err != nil {
+		log.Fatal("strconv failed:", err)
+	}
+
+	surfaceArea := 2 * ((length * width) +
+		(width * height) + (length * height))
+
+	dimensions := []int{length, width, height}
+	slices.Sort(dimensions)
+
+	return Box{
+		dims:    dimensions,
+		sfcArea: surfaceArea,
+		vol:     length * width * height,
+	}
+
 }
 
-func sfcArea(x, y int) int {
-	return x * y
-}
-
-func minDims(dims [3]int) (mins [2]int) {
-	return [2]int{4, 5}
+func minDims(dims []int) (mins []int) {
+	lowest := math.MaxInt
+	lowest = min(dims[0], lowest)
+	return []int{4, 5}
 }
 
 func evalPart1(lines []string) int {
 	total := 0
 
 	for _, line := range lines {
-		dims := lineToDims(line)
-
+		if line == "" {
+			continue
+		}
+		box := NewBox(line)
+		total += box.sfcArea + (box.dims[0] * box.dims[1])
 	}
 
 	return total
@@ -36,6 +67,16 @@ func evalPart1(lines []string) int {
 
 func evalPart2(lines []string) int {
 	total := 0
+
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+		box := NewBox(line)
+
+		total += 2 * (box.dims[0] + box.dims[1])
+		total += box.vol // forgot ribbon
+	}
 
 	return total
 }
