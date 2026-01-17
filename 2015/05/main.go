@@ -12,13 +12,11 @@ func evalPart1(lines []string) int {
 	badStrings := []string{"ab", "cd", "pq", "xy"}
 
 	for _, line := range lines {
-		fmt.Println("Line:", line)
 		badBool := false
 
 		if line != "" {
 			for _, badStr := range badStrings {
 				if strings.Contains(line, badStr) {
-					fmt.Println("! Found bad string!", badStr)
 					badBool = true
 					break
 				}
@@ -33,14 +31,11 @@ func evalPart1(lines []string) int {
 			for i, char := range line {
 				if vowelCount < 3 && strings.Contains("aeiou", string(char)) {
 					vowelCount++
-					fmt.Println("  Found vowel #", vowelCount)
 				}
 
 				if !hasDouble {
 					if (i+1) < len(line) &&
 						string(line[i+1]) == string(char) {
-						dub := fmt.Sprintf("%s == %s", string(line[i]), string(char))
-						fmt.Printf("  Found double: %s (%d & %d)\n", dub, i, i+1)
 						hasDouble = true
 					}
 				}
@@ -48,7 +43,6 @@ func evalPart1(lines []string) int {
 			if hasDouble && vowelCount >= 3 {
 				count++
 			}
-			fmt.Println("    Count: ", count)
 		}
 	}
 	return count
